@@ -1,0 +1,10 @@
+Categoria.class
+StatusLivro.class
+Livro$StatusLivro.class
+Emprestimo$Status.class
+Emprestimo.class
+Reserva.class
+com/example/libshow/LibshowApplication.class
+Reserva$Status.class
+Livro.class
+Usuario.class

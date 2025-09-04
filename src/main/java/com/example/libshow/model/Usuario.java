@@ -1,3 +1,5 @@
+package com.example.libshow.model;
+
 import jakarta.persistence.*;
 import java.util.List;
 

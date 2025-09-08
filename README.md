@@ -71,6 +71,8 @@ spring.datasource.password=sua_senha
 - [Breno Pires Santos](https://github.com/brenodft)  
 - [Caio Faria Diniz](https://github.com/CaioFD)  
 - [Giuseppe Sena Cordeiro](https://github.com/giusfds)  
+- [Vinícius Miranda de Araújo](https://github.com/vinimiraa)
+
 
 ---
 

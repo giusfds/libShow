@@ -1,0 +1,10 @@
+com/example/libshow/model/Emprestimo$Status.class
+com/example/libshow/model/Emprestimo.class
+com/example/libshow/model/Usuario.class
+com/example/libshow/model/Reserva$Status.class
+com/example/libshow/model/Livro$StatusLivro.class
+com/example/libshow/model/Reserva.class
+com/example/libshow/model/Categoria.class
+com/example/libshow/LibshowApplication.class
+com/example/libshow/model/Livro.class
+com/example/libshow/model/StatusLivro.class

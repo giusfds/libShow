@@ -1,0 +1,725 @@
+\documentclass[aspectratio=169]{beamer}
+
+% Tema e cores
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Pacotes
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{fontawesome5}
+
+% Configuração de cores
+\definecolor{springgreen}{RGB}{109,179,63}
+\definecolor{reactblue}{RGB}{97,218,251}
+\definecolor{javacolor}{RGB}{237,139,0}
+
+% Informações do documento
+\title{LibShow}
+\subtitle{Sistema de Gerenciamento de Biblioteca Acadêmica}
+\author{[Nomes dos Integrantes]}
+\institute{PUC Minas - Ciência da Computação\\Engenharia de Software 2}
+\date{Novembro 2024}
+
+% Logo
+\logo{\includegraphics[height=0.8cm]{logo.png}} % Adicionar logo se disponível
+
+% Configuração de código
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    breaklines=true,
+    frame=single
+}
+
+\begin{document}
+
+% ============================================================
+% SLIDE 1: TÍTULO
+% ============================================================
+\begin{frame}
+\titlepage
+\begin{center}
+    \faBook\ \faCode\ \faDatabase
+\end{center}
+\end{frame}
+
+% ============================================================
+% SLIDE 2: AGENDA
+% ============================================================
+\begin{frame}{Agenda}
+\tableofcontents
+\end{frame}
+
+% ============================================================
+% SEÇÃO 1: INTRODUÇÃO
+% ============================================================
+\section{Introdução e Objetivo}
+
+\begin{frame}{Contexto do Problema}
+\begin{block}{Desafios de Bibliotecas Acadêmicas}
+Bibliotecas enfrentam dificuldades no gerenciamento manual:
+\begin{itemize}
+    \item \faExclamationTriangle\ Controle de empréstimos e devoluções
+    \item \faExclamationTriangle\ Gestão de acervo e disponibilidade
+    \item \faExclamationTriangle\ Cadastro e autenticação de usuários
+    \item \faExclamationTriangle\ Geração de relatórios administrativos
+    \item \faExclamationTriangle\ Filas de espera para livros indisponíveis
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Motivação}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Problemas Identificados:}
+\begin{itemize}
+    \item Processos manuais lentos
+    \item Erros no controle
+    \item Falta de centralização
+    \item Dificuldade em análises
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Benefícios da Solução:}
+\begin{itemize}
+    \item \faCheckCircle[regular] Reduzir tempo de atendimento
+    \item \faCheckCircle[regular] Eliminar erros humanos
+    \item \faCheckCircle[regular] Centralizar informações
+    \item \faCheckCircle[regular] Facilitar relatórios
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Público-Alvo}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw, circle, fill=blue!20, minimum size=2.5cm] at (0,0) 
+        {\begin{tabular}{c}\faUserGraduate\\\textbf{Alunos}\end{tabular}};
+    \node[draw, circle, fill=green!20, minimum size=2.5cm] at (4,0) 
+        {\begin{tabular}{c}\faUserTie\\\textbf{Bibliotecários}\end{tabular}};
+    \node[draw, circle, fill=red!20, minimum size=2.5cm] at (8,0) 
+        {\begin{tabular}{c}\faUserShield\\\textbf{Administradores}\end{tabular}};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{columns}
+\column{0.33\textwidth}
+\centering
+\small
+Consultar acervo\\
+Fazer reservas\\
+Ver histórico
+
+\column{0.33\textwidth}
+\centering
+\small
+Gerenciar empréstimos\\
+Cadastrar livros\\
+Processar filas
+
+\column{0.33\textwidth}
+\centering
+\small
+Visualizar relatórios\\
+Analisar estatísticas\\
+Gestão completa
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SEÇÃO 2: REQUISITOS E MODELAGEM
+% ============================================================
+\section{Requisitos e Modelagem}
+
+\begin{frame}{Principais User Stories}
+\begin{block}{US-01: Autenticação de Usuários}
+\textbf{Como} usuário do sistema\\
+\textbf{Quero} realizar login com minhas credenciais\\
+\textbf{Para} acessar funcionalidades de acordo com meu perfil
+\end{block}
+
+\begin{block}{US-08: Registrar Empréstimo}
+\textbf{Como} bibliotecário\\
+\textbf{Quero} registrar um empréstimo de livro\\
+\textbf{Para} controlar livros emprestados
+\end{block}
+
+\vspace{0.3cm}
+\footnotesize
+\faInfoCircle\ Total de 17 user stories detalhadas em 5 épicos
+\end{frame}
+
+\begin{frame}{Diagrama de Casos de Uso}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{use_cases.png}
+\end{center}
+\footnotesize
+\textit{Principais casos de uso: Login, Consultar Acervo, Registrar Empréstimo, Fazer Reserva, Ver Relatórios}
+\end{frame}
+
+\begin{frame}{Diagrama de Classes - Modelo de Domínio}
+\begin{center}
+\begin{tikzpicture}[scale=0.7, transform shape]
+    % Usuario
+    \node[draw, rectangle, text width=3cm] at (0,3) {
+        \textbf{Usuario}
+        \rule{\textwidth}{0.4pt}
+        - id: Long\\
+        - nome: String\\
+        - email: String\\
+        - senha: String\\
+        - cpf: String\\
+        - tipo: String
+    };
+    
+    % Emprestimo
+    \node[draw, rectangle, text width=3.5cm] at (6,3) {
+        \textbf{Emprestimo}
+        \rule{\textwidth}{0.4pt}
+        - id: Long\\
+        - dataEmprestimo: Date\\
+        - dataDevolucao: Date\\
+        - devolvido: Boolean
+    };
+    
+    % Livro
+    \node[draw, rectangle, text width=3.5cm] at (6,0) {
+        \textbf{Livro}
+        \rule{\textwidth}{0.4pt}
+        - id: Long\\
+        - titulo: String\\
+        - autor: String\\
+        - isbn: String\\
+        - quantidadeTotal: int\\
+        - quantidadeDisp: int
+    };
+    
+    % Reserva
+    \node[draw, rectangle, text width=3cm] at (0,0) {
+        \textbf{Reserva}
+        \rule{\textwidth}{0.4pt}
+        - id: Long\\
+        - dataReserva: Date\\
+        - status: String
+    };
+    
+    % Relacionamentos
+    \draw[->] (0.5,2.5) -- (5.5,3.3) node[midway,above] {1};
+    \draw[->] (6,2.5) -- (6,1.5) node[midway,right] {*};
+    \draw[->] (1,0.5) -- (5.5,0.3) node[midway,below] {*};
+    \draw[->] (0,2.5) -- (0,0.5) node[midway,left] {1..*};
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+% ============================================================
+% SEÇÃO 3: ARQUITETURA
+% ============================================================
+\section{Arquitetura do Sistema}
+
+\begin{frame}{Arquitetura em 3 Camadas}
+\begin{center}
+\begin{tikzpicture}
+    % Camada 1: Frontend
+    \node[draw, rectangle, fill=reactblue!30, text width=10cm, minimum height=1.5cm] at (0,4) {
+        \textbf{CAMADA 1: PRESENTATION}\\
+        \small Frontend (React + Vite) - UI Components, State Management, API Services
+    };
+    
+    % Seta 1
+    \draw[->, thick] (0,3.2) -- (0,2.8) node[midway,right] {\small HTTP REST + JWT};
+    
+    % Camada 2: Backend
+    \node[draw, rectangle, fill=springgreen!30, text width=10cm, minimum height=2.5cm] at (0,1.5) {
+        \textbf{CAMADA 2: BUSINESS LOGIC}\\
+        \small Backend (Spring Boot)\\
+        \tiny Controllers $\rightarrow$ Services $\rightarrow$ Repositories $\rightarrow$ Domain\\
+        \tiny Security (JWT + Spring Security)
+    };
+    
+    % Seta 2
+    \draw[->, thick] (0,0.2) -- (0,-0.2) node[midway,right] {\small JPA/Hibernate};
+    
+    % Camada 3: Database
+    \node[draw, rectangle, fill=blue!20, text width=10cm, minimum height=1.2cm] at (0,-1) {
+        \textbf{CAMADA 3: DATA PERSISTENCE}\\
+        \small Database (H2 / PostgreSQL) - Tables \& Relationships
+    };
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}{Padrões de Design Utilizados}
+\begin{columns}
+\column{0.5\textwidth}
+\begin{block}{MVC Pattern}
+\begin{itemize}
+    \item \textbf{Model}: Entidades JPA
+    \item \textbf{View}: Frontend React
+    \item \textbf{Controller}: REST Controllers
+\end{itemize}
+\end{block}
+
+\begin{block}{Repository Pattern}
+Spring Data JPA para abstração do acesso a dados
+\end{block}
+
+\column{0.5\textwidth}
+\begin{block}{Dependency Injection}
+Spring IoC Container gerencia dependências
+\end{block}
+
+\begin{block}{RESTful API}
+Endpoints seguindo padrões REST\\
+Stateless com JWT
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Justificativa das Escolhas}
+\begin{table}
+\small
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Tecnologia} & \textbf{Justificativa} \\
+\hline
+Spring Boot & Framework maduro, ecossistema completo, configuração por convenção \\
+\hline
+React + Vite & Biblioteca moderna, component-based, build rápido \\
+\hline
+H2 Database & Embedded para desenvolvimento, fácil setup \\
+\hline
+JWT & Stateless authentication, escalável, padrão moderno \\
+\hline
+shadcn/ui & Componentes prontos, acessíveis, customizáveis \\
+\hline
+\end{tabular}
+\end{table}
+\end{frame}
+
+% ============================================================
+% SEÇÃO 4: IMPLEMENTAÇÃO
+% ============================================================
+\section{Implementação}
+
+\begin{frame}{Stack Tecnológica}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{\color{javacolor} Backend}
+\begin{itemize}
+    \item Java 21
+    \item Spring Boot 3.3.4
+    \item Spring Data JPA
+    \item Spring Security
+    \item JWT
+    \item H2 Database
+    \item JUnit 5 + Mockito
+    \item Maven
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{\color{reactblue} Frontend}
+\begin{itemize}
+    \item React 19
+    \item Vite 5
+    \item Tailwind CSS 4
+    \item shadcn/ui
+    \item Radix UI
+    \item Lucide React
+    \item Axios
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Controller Layer - Exemplo}
+\begin{lstlisting}[language=Java]
+@RestController
+@RequestMapping("/api/livros")
+public class LivroController {
+    @Autowired
+    private LivroService livroService;
+    
+    @GetMapping
+    public List<Livro> getAllLivros() {
+        return livroService.findAll();
+    }
+    
+    @PostMapping
+    public Livro createLivro(@RequestBody Livro livro) {
+        return livroService.save(livro);
+    }
+    
+    @PostMapping("/{id}/decrease/{quantity}")
+    public ResponseEntity<Livro> decreaseQuantity(
+            @PathVariable Long id, 
+            @PathVariable int quantity) {
+        livroService.decreaseAvailableQuantity(id, quantity);
+        return ResponseEntity.ok(livroService.findById(id).get());
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Service Layer - Lógica de Negócio}
+\begin{lstlisting}[language=Java]
+@Service
+public class LivroService {
+    @Autowired
+    private LivroRepository livroRepository;
+    
+    public void decreaseAvailableQuantity(Long id, int qty) {
+        Livro livro = livroRepository.findById(id)
+            .orElseThrow(() -> 
+                new RuntimeException("Livro not found"));
+        
+        if (livro.getQuantidadeDisponivel() < qty) {
+            throw new RuntimeException(
+                "Not enough books available");
+        }
+        
+        livro.setQuantidadeDisponivel(
+            livro.getQuantidadeDisponivel() - qty);
+        livroRepository.save(livro);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Fluxo de Chamadas - Realizar Empréstimo}
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm]
+    \node (frontend) [draw, rectangle, fill=blue!20] {Frontend: User clica "Emprestar"};
+    \node (service) [draw, rectangle, fill=blue!20, below of=frontend] {Service: emprestimoService.create()};
+    \node (controller) [draw, rectangle, fill=green!20, below of=service] {Controller: EmprestimoController};
+    \node (businesslogic) [draw, rectangle, fill=green!20, below of=controller] {Service: Validações + Lógica};
+    \node (repository) [draw, rectangle, fill=yellow!20, below of=businesslogic] {Repository: JPA save()};
+    \node (database) [draw, rectangle, fill=red!20, below of=repository] {Database: SQL INSERT};
+    
+    \draw[->, thick] (frontend) -- (service);
+    \draw[->, thick] (service) -- (controller) node[midway,right] {\tiny HTTP POST + JWT};
+    \draw[->, thick] (controller) -- (businesslogic);
+    \draw[->, thick] (businesslogic) -- (repository);
+    \draw[->, thick] (repository) -- (database) node[midway,right] {\tiny JPA};
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+% ============================================================
+% SEÇÃO 5: TESTES E QUALIDADE
+% ============================================================
+\section{Testes e Qualidade}
+
+\begin{frame}{Estratégia de Testes}
+\begin{block}{Testes Unitários}
+\begin{itemize}
+    \item Framework: JUnit 5 + Mockito
+    \item Foco: Service Layer e Domain Logic
+    \item Objetivo: Validar regras de negócio isoladamente
+\end{itemize}
+\end{block}
+
+\begin{block}{Testes de Integração}
+\begin{itemize}
+    \item Framework: Spring Boot Test + MockMvc
+    \item Foco: Fluxo completo Controller $\rightarrow$ Service $\rightarrow$ Repository
+    \item Objetivo: Validar integração entre camadas
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Cobertura}
+Meta: > 70\% | Atual: \textasciitilde70\% (Service + Controller)
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Exemplo de Teste Unitário}
+\begin{lstlisting}[language=Java]
+@SpringBootTest
+class LivroServiceTest {
+    @Mock
+    private LivroRepository livroRepository;
+    
+    @InjectMocks
+    private LivroService livroService;
+    
+    @Test
+    void testDecreaseQuantity_Success() {
+        Livro livro = new Livro("Clean Code", "Martin", 
+            "123", 2008, "PH", 10, 5);
+        when(livroRepository.findById(1L))
+            .thenReturn(Optional.of(livro));
+        
+        livroService.decreaseAvailableQuantity(1L, 2);
+        
+        assertEquals(3, livro.getQuantidadeDisponivel());
+        verify(livroRepository).save(livro);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Ferramentas de Qualidade}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Backend}
+\begin{itemize}
+    \item \faCheckCircle[regular] JUnit 5
+    \item \faCheckCircle[regular] Mockito
+    \item \faCheckCircle[regular] Spring Boot Test
+    \item \faCheckCircle[regular] Maven Surefire
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Frontend}
+\begin{itemize}
+    \item \faCheckCircle[regular] ESLint
+    \item \faCheckCircle[regular] Prettier
+    \item \faCheckCircle[regular] Vite (build otimizado)
+\end{itemize}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{block}{Boas Práticas Aplicadas}
+\begin{itemize}
+    \item Princípios SOLID
+    \item Clean Code
+    \item Git Workflow (commits descritivos, branches)
+    \item Code Review via Pull Requests
+\end{itemize}
+\end{block}
+\end{frame}
+
+% ============================================================
+% SEÇÃO 6: DEMONSTRAÇÃO
+% ============================================================
+\section{Demonstração}
+
+\begin{frame}{Demonstração Funcional}
+\begin{center}
+\LARGE \faVideo\ Vídeo de Demonstração
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{Fluxos Demonstrados:}
+\begin{enumerate}
+    \item Autenticação com JWT
+    \item Gestão de Livros (CRUD)
+    \item Registro de Empréstimo
+    \item Sistema de Reservas
+    \item Relatórios Administrativos
+\end{enumerate}
+
+\vspace{0.5cm}
+
+\begin{center}
+\faGithub\ \texttt{github.com/andreeluis/libshow}\\
+\faYoutube\ \textit{[Link do vídeo será adicionado]}
+\end{center}
+\end{frame}
+
+\begin{frame}{Funcionalidades Demonstradas}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Alunos}
+\begin{itemize}
+    \item \faCheckCircle[regular] Consultar acervo
+    \item \faCheckCircle[regular] Visualizar histórico
+    \item \faCheckCircle[regular] Fazer reservas
+\end{itemize}
+
+\textbf{Bibliotecários}
+\begin{itemize}
+    \item \faCheckCircle[regular] Registrar empréstimos
+    \item \faCheckCircle[regular] Gerenciar livros
+    \item \faCheckCircle[regular] Processar devoluções
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Administradores}
+\begin{itemize}
+    \item \faCheckCircle[regular] Relatórios completos
+    \item \faCheckCircle[regular] Estatísticas do sistema
+    \item \faCheckCircle[regular] Livros mais emprestados
+\end{itemize}
+
+\textbf{Extras Implementados}
+\begin{itemize}
+    \item \faStar\ UI moderna (shadcn/ui)
+    \item \faStar\ Interface responsiva
+    \item \faStar\ Validações em tempo real
+\end{itemize}
+\end{columns}
+\end{frame}
+
+% ============================================================
+% SEÇÃO 7: CONCLUSÕES
+% ============================================================
+\section{Conclusões}
+
+\begin{frame}{Principais Aprendizados}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Técnicos}
+\begin{itemize}
+    \item Arquitetura em Camadas
+    \item Spring Boot Ecosystem
+    \item React Moderno (Hooks)
+    \item APIs RESTful
+    \item Autenticação JWT
+    \item Testes Automatizados
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Engenharia de Software}
+\begin{itemize}
+    \item Modelagem UML
+    \item User Stories
+    \item Padrões de Design
+    \item Git Workflow
+    \item Documentação
+    \item Trabalho em Equipe
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Desafios Enfrentados}
+\begin{enumerate}
+    \item \textbf{Integração Frontend-Backend}
+    \begin{itemize}
+        \item \faArrowRight\ Solução: Contrato de API bem definido
+    \end{itemize}
+    
+    \item \textbf{Segurança com JWT}
+    \begin{itemize}
+        \item \faArrowRight\ Solução: Estudo aprofundado de Spring Security
+    \end{itemize}
+    
+    \item \textbf{Gestão de Estado no React}
+    \begin{itemize}
+        \item \faArrowRight\ Solução: React Hooks (useState, useEffect)
+    \end{itemize}
+    
+    \item \textbf{Testes de Integração}
+    \begin{itemize}
+        \item \faArrowRight\ Solução: MockMvc e contexto de testes
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Melhorias Futuras}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Curto Prazo}
+\begin{itemize}
+    \item Notificações por email
+    \item Sistema de multas
+    \item Upload de capas
+    \item Histórico detalhado
+    \item Filtros avançados
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Médio/Longo Prazo}
+\begin{itemize}
+    \item Mobile App (React Native)
+    \item Leitor de código de barras
+    \item Dashboard Analytics
+    \item API GraphQL
+    \item Microservices
+    \item CI/CD Pipeline
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{O Que Faríamos Diferente}
+\begin{block}{Planejamento}
+\begin{itemize}
+    \item Definir API Contract antes (Swagger/OpenAPI)
+    \item Modelagem UML mais detalhada no início
+    \item Setup de CI/CD desde o começo
+\end{itemize}
+\end{block}
+
+\begin{block}{Implementação}
+\begin{itemize}
+    \item DTOs separados das Entities
+    \item Bean Validation (\texttt{@Valid}, \texttt{@NotNull})
+    \item Exception Handling Global (\texttt{@ControllerAdvice})
+    \item Logs estruturados (SLF4J)
+\end{itemize}
+\end{block}
+
+\begin{block}{Testes}
+\begin{itemize}
+    \item TDD desde o início
+    \item Meta de 90\%+ cobertura
+    \item Testes E2E (Selenium/Cypress)
+\end{itemize}
+\end{block}
+\end{frame}
+
+% ============================================================
+% SLIDE FINAL: RESUMO EXECUTIVO
+% ============================================================
+\begin{frame}{Resumo Executivo}
+\begin{table}
+\tiny
+\begin{tabular}{|l|p{7cm}|}
+\hline
+\textbf{Aspecto} & \textbf{Detalhes} \\
+\hline
+Problema & Gestão manual de bibliotecas é ineficiente \\
+\hline
+Solução & Sistema web integrado e moderno \\
+\hline
+Arquitetura & 3 Camadas (React + Spring Boot + H2) \\
+\hline
+Padrões & MVC, Repository, DI, JWT \\
+\hline
+Tecnologias & Java 21, Spring Boot 3.3, React 19, JPA \\
+\hline
+Testes & JUnit 5, Mockito, Spring Test \\
+\hline
+Resultados & Sistema funcional e escalável \\
+\hline
+Aprendizados & Arquitetura, padrões, trabalho em equipe \\
+\hline
+\end{tabular}
+\end{table}
+\end{frame}
+
+% ============================================================
+% SLIDE FINAL: AGRADECIMENTOS
+% ============================================================
+\begin{frame}
+\begin{center}
+{\Huge Obrigado!}
+
+\vspace{1cm}
+
+{\Large \faBook\ LibShow}\\
+\vspace{0.3cm}
+{\large Sistema de Gerenciamento de Biblioteca Acadêmica}
+
+\vspace{1cm}
+
+\begin{tabular}{cl}
+\faGithub & \texttt{github.com/andreeluis/libshow} \\
+\faYoutube & \textit{[Link do vídeo de demonstração]} \\
+\faEnvelope & \textit{[emails dos integrantes]} \\
+\end{tabular}
+
+\end{center}
+\end{frame}
+
+\end{document}

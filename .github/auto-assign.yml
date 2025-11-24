@@ -1,0 +1,26 @@
+# Auto-assign configuration for GitHub PRs
+
+# Add reviewers to pull requests
+addReviewers: true
+
+# Add assignees to pull requests
+addAssignees: author
+
+# Number of reviewers to add
+numberOfReviewers: 2
+
+# Reviewers pool
+reviewers:
+  - andreeluis
+  # Add your team members here
+
+# Skip keywords
+skipKeywords:
+  - wip
+  - WIP
+  - draft
+
+# Filter labels
+# Only add reviewers if PR has these labels
+# filterLabels:
+#   - ready-for-review

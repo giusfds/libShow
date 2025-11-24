@@ -1,7 +1,7 @@
-package com.libshow.security;
+package com.example.libshow.security;
 
-import com.libshow.domain.Usuario;
-import com.libshow.repository.UsuarioRepository;
+import com.example.libshow.domain.Usuario;
+import com.example.libshow.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

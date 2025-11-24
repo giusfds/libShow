@@ -1,7 +1,7 @@
-package com.libshow.service;
+package com.example.libshow.service;
 
-import com.libshow.domain.Livro;
-import com.libshow.repository.LivroRepository;
+import com.example.libshow.domain.Livro;
+import com.example.libshow.repository.LivroRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

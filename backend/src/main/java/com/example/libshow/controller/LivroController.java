@@ -1,7 +1,7 @@
-package com.libshow.controller;
+package com.example.libshow.controller;
 
-import com.libshow.domain.Livro;
-import com.libshow.service.LivroService;
+import com.example.libshow.domain.Livro;
+import com.example.libshow.service.LivroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

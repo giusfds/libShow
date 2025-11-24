@@ -1,7 +1,7 @@
-package com.libshow.controller;
+package com.example.libshow.controller;
 
-import com.libshow.domain.Emprestimo;
-import com.libshow.service.EmprestimoService;
+import com.example.libshow.domain.Emprestimo;
+import com.example.libshow.service.EmprestimoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

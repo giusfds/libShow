@@ -1,8 +1,8 @@
-package com.libshow.controller;
+package com.example.libshow.controller;
 
-import com.libshow.domain.Emprestimo;
-import com.libshow.domain.Reserva;
-import com.libshow.service.RelatorioService;
+import com.example.libshow.domain.Emprestimo;
+import com.example.libshow.domain.Reserva;
+import com.example.libshow.service.RelatorioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

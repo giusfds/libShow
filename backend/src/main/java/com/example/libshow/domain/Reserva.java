@@ -1,6 +1,6 @@
-package com.libshow.domain;
+package com.example.libshow.domain;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity

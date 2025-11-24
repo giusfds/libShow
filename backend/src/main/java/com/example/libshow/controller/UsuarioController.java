@@ -1,7 +1,7 @@
-package com.libshow.controller;
+package com.example.libshow.controller;
 
-import com.libshow.domain.Usuario;
-import com.libshow.service.UsuarioService;
+import com.example.libshow.domain.Usuario;
+import com.example.libshow.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

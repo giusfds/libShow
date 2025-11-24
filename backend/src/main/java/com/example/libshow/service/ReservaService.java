@@ -1,11 +1,11 @@
-package com.libshow.service;
+package com.example.libshow.service;
 
-import com.libshow.domain.Livro;
-import com.libshow.domain.Reserva;
-import com.libshow.domain.Usuario;
-import com.libshow.repository.LivroRepository;
-import com.libshow.repository.ReservaRepository;
-import com.libshow.repository.UsuarioRepository;
+import com.example.libshow.domain.Livro;
+import com.example.libshow.domain.Reserva;
+import com.example.libshow.domain.Usuario;
+import com.example.libshow.repository.LivroRepository;
+import com.example.libshow.repository.ReservaRepository;
+import com.example.libshow.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

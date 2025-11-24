@@ -1,9 +1,9 @@
-package com.libshow.service;
+package com.example.libshow.service;
 
-import com.libshow.domain.Emprestimo;
-import com.libshow.domain.Reserva;
-import com.libshow.repository.EmprestimoRepository;
-import com.libshow.repository.ReservaRepository;
+import com.example.libshow.domain.Emprestimo;
+import com.example.libshow.domain.Reserva;
+import com.example.libshow.repository.EmprestimoRepository;
+import com.example.libshow.repository.ReservaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

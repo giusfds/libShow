@@ -1,11 +1,11 @@
-package com.libshow;
+package com.example.libshow;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"com.libshow.controller", "com.libshow.service", "com.libshow.repository", "com.libshow.security"})
+@ComponentScan("com.example.libshow")
 public class LibshowApplication {
 
 	public static void main(String[] args) {

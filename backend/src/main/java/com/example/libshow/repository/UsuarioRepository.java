@@ -1,6 +1,6 @@
-package com.libshow.repository;
+package com.example.libshow.repository;
 
-import com.libshow.domain.Usuario;
+import com.example.libshow.domain.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.libshow.security;
+package com.example.libshow.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

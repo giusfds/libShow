@@ -1,9 +1,9 @@
-package com.libshow.controller;
+package com.example.libshow.controller;
 
-import com.libshow.security.JwtRequest;
-import com.libshow.security.JwtResponse;
-import com.libshow.security.JwtTokenUtil;
-import com.libshow.security.JwtUserDetailsService;
+import com.example.libshow.security.JwtRequest;
+import com.example.libshow.security.JwtResponse;
+import com.example.libshow.security.JwtTokenUtil;
+import com.example.libshow.security.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

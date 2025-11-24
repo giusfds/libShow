@@ -1,7 +1,7 @@
-package com.libshow.controller;
+package com.example.libshow.controller;
 
-import com.libshow.domain.Reserva;
-import com.libshow.service.ReservaService;
+import com.example.libshow.domain.Reserva;
+import com.example.libshow.service.ReservaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

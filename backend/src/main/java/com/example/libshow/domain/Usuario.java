@@ -1,7 +1,7 @@
 
-package com.libshow.domain;
+package com.example.libshow.domain;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 public class Usuario {

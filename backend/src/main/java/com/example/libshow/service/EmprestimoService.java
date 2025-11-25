@@ -6,6 +6,8 @@ import com.example.libshow.domain.Usuario;
 import com.example.libshow.repository.EmprestimoRepository;
 import com.example.libshow.repository.LivroRepository;
 import com.example.libshow.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ import java.util.Optional;
 
 @Service
 public class EmprestimoService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmprestimoService.class);
 
     @Autowired
     private EmprestimoRepository emprestimoRepository;
@@ -40,12 +44,24 @@ public class EmprestimoService {
     }
 
     public Emprestimo emprestarLivro(Long usuarioId, Long livroId, int diasEmprestimo) {
+        logger.info("[EmprestimoService] Iniciando empréstimo - Usuário ID: {}, Livro ID: {}, Dias: {}", usuarioId, livroId, diasEmprestimo);
+
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> {
+                    logger.error("[EmprestimoService] Usuário não encontrado. ID: {}", usuarioId);
+                    return new RuntimeException("Usuário não encontrado");
+                });
+        logger.debug("[EmprestimoService] Usuário encontrado: {}", usuario.getNome());
+
         Livro livro = livroService.findById(livroId)
-                .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
+                .orElseThrow(() -> {
+                    logger.error("[EmprestimoService] Livro não encontrado. ID: {}", livroId);
+                    return new RuntimeException("Livro não encontrado");
+                });
+        logger.debug("[EmprestimoService] Livro encontrado: {} - Quantidade disponível: {}", livro.getTitulo(), livro.getQuantidadeDisponivel());
 
         if (livro.getQuantidadeDisponivel() <= 0) {
+            logger.error("[EmprestimoService] Livro indisponível para empréstimo. ID: {}, Título: {}", livroId, livro.getTitulo());
             throw new RuntimeException("Livro não disponível para empréstimo");
         }
 
@@ -53,23 +69,38 @@ public class EmprestimoService {
 
         LocalDate dataEmprestimo = LocalDate.now();
         LocalDate dataDevolucaoPrevista = dataEmprestimo.plusDays(diasEmprestimo);
+        logger.debug("[EmprestimoService] Data empréstimo: {}, Data devolução prevista: {}", dataEmprestimo, dataDevolucaoPrevista);
 
         Emprestimo emprestimo = new Emprestimo(usuario, livro, dataEmprestimo, dataDevolucaoPrevista);
-        return emprestimoRepository.save(emprestimo);
+        Emprestimo emprestimoSalvo = emprestimoRepository.save(emprestimo);
+        logger.info("[EmprestimoService] Empréstimo criado com sucesso. ID: {}", emprestimoSalvo.getId());
+        return emprestimoSalvo;
     }
 
     public Emprestimo devolverLivro(Long emprestimoId) {
+        logger.info("[EmprestimoService] Processando devolução. Empréstimo ID: {}", emprestimoId);
+
         Emprestimo emprestimo = emprestimoRepository.findById(emprestimoId)
-                .orElseThrow(() -> new RuntimeException("Empréstimo não encontrado"));
+                .orElseThrow(() -> {
+                    logger.error("[EmprestimoService] Empréstimo não encontrado. ID: {}", emprestimoId);
+                    return new RuntimeException("Empréstimo não encontrado");
+                });
+
+        logger.debug("[EmprestimoService] Empréstimo encontrado - Livro: {}, Usuário: {}",
+                emprestimo.getLivro().getTitulo(), emprestimo.getUsuario().getNome());
 
         if (emprestimo.getDataDevolucaoReal() != null) {
+            logger.warn("[EmprestimoService] Tentativa de devolver livro já devolvido. Empréstimo ID: {}", emprestimoId);
             throw new RuntimeException("Livro já devolvido");
         }
 
         emprestimo.setDataDevolucaoReal(LocalDate.now());
+        logger.debug("[EmprestimoService] Data de devolução real: {}", emprestimo.getDataDevolucaoReal());
+
         livroService.increaseAvailableQuantity(emprestimo.getLivro().getId(), 1);
 
-        return emprestimoRepository.save(emprestimo);
+        Emprestimo emprestimoAtualizado = emprestimoRepository.save(emprestimo);
+        logger.info("[EmprestimoService] Devolução processada com sucesso. Empréstimo ID: {}", emprestimoId);
+        return emprestimoAtualizado;
     }
 }
-

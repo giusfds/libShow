@@ -2,6 +2,8 @@ package com.example.libshow.controller;
 
 import com.example.libshow.domain.Usuario;
 import com.example.libshow.service.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +13,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class);
 
     @Autowired
     private UsuarioService usuarioService;
@@ -29,7 +33,15 @@ public class UsuarioController {
 
     @PostMapping
     public Usuario createUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.save(usuario);
+        logger.info("[UsuarioController] Criando novo usuário: {}", usuario.getEmail());
+        try {
+            Usuario novoUsuario = usuarioService.save(usuario);
+            logger.info("[UsuarioController] Usuário criado com sucesso. ID: {}, Email: {}", novoUsuario.getId(), novoUsuario.getEmail());
+            return novoUsuario;
+        } catch (Exception e) {
+            logger.error("[UsuarioController] Erro ao criar usuário: {}", usuario.getEmail(), e);
+            throw e;
+        }
     }
 
     @PutMapping("/{id}")
@@ -53,4 +65,3 @@ public class UsuarioController {
                 }).orElse(ResponseEntity.notFound().build());
     }
 }
-

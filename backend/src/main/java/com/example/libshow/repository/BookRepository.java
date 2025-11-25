@@ -1,12 +1,12 @@
 package com.example.libshow.repository;
 
-import com.example.libshow.domain.Usuario;
+import com.example.libshow.domain.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.Optional;
 
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    Optional<Usuario> findByEmail(String email);
+public interface BookRepository extends JpaRepository<Book, Long> {
+	Optional<Book> findByIsbn(String isbn);
 }
-

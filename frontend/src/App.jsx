@@ -1,32 +1,31 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
-import { Input } from '@/components/ui/input.jsx'
-import { Label } from '@/components/ui/label.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
-import { BookOpen, Users, BookMarked, FileText, LogIn, Loader2 } from 'lucide-react'
+import { BookOpen, Users, BookMarked, FileText, Plus } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext.jsx'
 import { toast } from 'sonner'
 import bookService from './services/bookService.js'
 import userService from './services/userService.js'
 import loanService from './services/loanService.js'
 import reservationService from './services/reservationService.js'
-import { USER_ROLES, USER_ROLE_LABELS, DEFAULT_LOAN_DAYS, DEFAULT_RESERVATION_DAYS, RESERVATION_STATUS_LABELS } from './utils/constants.js'
-import { formatDate, isLoanOverdue, isReservationExpired } from './utils/formatters.js'
+import { DEFAULT_LOAN_DAYS, DEFAULT_RESERVATION_DAYS } from './utils/constants.js'
+import LoginForm from './components/auth/LoginForm.jsx'
+import BookModal from './components/books/BookModal.jsx'
+import BookList from './components/books/BookList.jsx'
+import UserModal from './components/users/UserModal.jsx'
+import UserList from './components/users/UserList.jsx'
+import LoanModal from './components/loans/LoanModal.jsx'
+import LoanList from './components/loans/LoanList.jsx'
+import ReservationModal from './components/reservations/ReservationModal.jsx'
+import ReservationList from './components/reservations/ReservationList.jsx'
 import './App.css'
 
 function App() {
-	const { isAuthenticated, loading, login, logout } = useAuth()
+	const { isAuthenticated, loading, logout } = useAuth()
 	const [activeTab, setActiveTab] = useState('livros')
-	const [showRegister, setShowRegister] = useState(false)
-	const [loginData, setLoginData] = useState({ username: '', password: '' })
-	const [registerData, setRegisterData] = useState({
-		name: '',
-		email: '',
-		password: '',
-		confirmPassword: '',
-	})
 
+	// Books state
 	const [livros, setLivros] = useState([])
 	const [loadingLivros, setLoadingLivros] = useState(false)
 	const [bookForm, setBookForm] = useState({
@@ -38,7 +37,9 @@ function App() {
 		totalQuantity: 1,
 	})
 	const [editingBook, setEditingBook] = useState(null)
+	const [bookModalOpen, setBookModalOpen] = useState(false)
 
+	// Users state
 	const [usuarios, setUsuarios] = useState([])
 	const [loadingUsuarios, setLoadingUsuarios] = useState(false)
 	const [userForm, setUserForm] = useState({
@@ -48,7 +49,9 @@ function App() {
 		role: 'STUDENT',
 	})
 	const [editingUser, setEditingUser] = useState(null)
+	const [userModalOpen, setUserModalOpen] = useState(false)
 
+	// Loans state
 	const [emprestimos, setEmprestimos] = useState([])
 	const [loadingEmprestimos, setLoadingEmprestimos] = useState(false)
 	const [loanForm, setLoanForm] = useState({
@@ -56,7 +59,9 @@ function App() {
 		bookId: '',
 		days: DEFAULT_LOAN_DAYS,
 	})
+	const [loanModalOpen, setLoanModalOpen] = useState(false)
 
+	// Reservations state
 	const [reservas, setReservas] = useState([])
 	const [loadingReservas, setLoadingReservas] = useState(false)
 	const [reservationForm, setReservationForm] = useState({
@@ -64,60 +69,11 @@ function App() {
 		bookId: '',
 		days: DEFAULT_RESERVATION_DAYS,
 	})
-
-	const handleLogin = async (e) => {
-		e.preventDefault()
-
-		const result = await login(loginData.username, loginData.password)
-
-		if (result.success) {
-			toast.success('Login realizado com sucesso!')
-		} else {
-			toast.error(result.error || 'Erro ao fazer login')
-		}
-	}
+	const [reservationModalOpen, setReservationModalOpen] = useState(false)
 
 	const handleLogout = () => {
 		logout()
-		setLoginData({ username: '', password: '' })
-		setShowRegister(false)
 		toast.info('Você saiu do sistema')
-	}
-
-	const handleRegister = async (e) => {
-		e.preventDefault()
-
-		if (registerData.password !== registerData.confirmPassword) {
-			toast.error('As senhas não coincidem')
-			return
-		}
-
-		if (registerData.password.length < 6) {
-			toast.error('A senha deve ter pelo menos 6 caracteres')
-			return
-		}
-
-		try {
-			await userService.create({
-				name: registerData.name,
-				email: registerData.email,
-				password: registerData.password,
-				role: 'STUDENT', // Novo usuário sempre começa como STUDENT
-			})
-
-			toast.success('Cadastro realizado com sucesso! Faça login para continuar.')
-
-			setRegisterData({
-				name: '',
-				email: '',
-				password: '',
-				confirmPassword: '',
-			})
-			setShowRegister(false)
-		} catch (error) {
-			toast.error(error.response?.data?.message || 'Erro ao realizar cadastro')
-			console.error(error)
-		}
 	}
 
 	// Load data when authenticated
@@ -130,10 +86,11 @@ function App() {
 		}
 	}, [isAuthenticated])
 
+	// Books handlers
 	const loadBooks = async () => {
 		try {
 			setLoadingLivros(true)
-			const data = await bookService.getAll()
+			const data = await bookService.getAllWithAvailability()
 			setLivros(data)
 		} catch (error) {
 			toast.error('Erro ao carregar livros')
@@ -168,6 +125,7 @@ function App() {
 				totalQuantity: 1,
 			})
 
+			setBookModalOpen(false)
 			loadBooks()
 		} catch (error) {
 			toast.error(editingBook ? 'Erro ao atualizar livro' : 'Erro ao cadastrar livro')
@@ -185,7 +143,7 @@ function App() {
 			publisher: book.publisher,
 			totalQuantity: book.totalQuantity,
 		})
-		window.scrollTo({ top: 0, behavior: 'smooth' })
+		setBookModalOpen(true)
 	}
 
 	const handleCancelEdit = () => {
@@ -198,6 +156,7 @@ function App() {
 			publisher: '',
 			totalQuantity: 1,
 		})
+		setBookModalOpen(false)
 	}
 
 	const handleDeleteBook = async (id) => {
@@ -213,6 +172,7 @@ function App() {
 		}
 	}
 
+	// Users handlers
 	const loadUsers = async () => {
 		try {
 			setLoadingUsuarios(true)
@@ -231,7 +191,6 @@ function App() {
 
 		try {
 			if (editingUser) {
-				// Se não digitou nova senha, remove o campo
 				const updateData = { ...userForm }
 				if (!updateData.password) {
 					delete updateData.password
@@ -252,6 +211,7 @@ function App() {
 				role: 'STUDENT',
 			})
 
+			setUserModalOpen(false)
 			loadUsers()
 		} catch (error) {
 			toast.error(editingUser ? 'Erro ao atualizar usuário' : 'Erro ao cadastrar usuário')
@@ -264,11 +224,10 @@ function App() {
 		setUserForm({
 			name: user.name,
 			email: user.email,
-			password: '', // Não mostra a senha por segurança
+			password: '',
 			role: user.role,
 		})
-		setActiveTab('usuarios')
-		window.scrollTo({ top: 0, behavior: 'smooth' })
+		setUserModalOpen(true)
 	}
 
 	const handleCancelEditUser = () => {
@@ -279,6 +238,7 @@ function App() {
 			password: '',
 			role: 'STUDENT',
 		})
+		setUserModalOpen(false)
 	}
 
 	const handleDeleteUser = async (id) => {
@@ -294,6 +254,7 @@ function App() {
 		}
 	}
 
+	// Loans handlers
 	const loadLoans = async () => {
 		try {
 			setLoadingEmprestimos(true)
@@ -315,6 +276,28 @@ function App() {
 			return
 		}
 
+		const selectedBook = livros.find((b) => b.id === parseInt(loanForm.bookId))
+
+		// Verifica se o livro tem reserva ativa
+		if (selectedBook?.hasActiveReservations) {
+			try {
+				const userReservations = await reservationService.getAll()
+				const hasUserReservation = userReservations.some(
+					(r) =>
+						r.book?.id === selectedBook.id &&
+						r.user?.id === parseInt(loanForm.userId) &&
+						r.status === 'ACTIVE'
+				)
+
+				if (!hasUserReservation) {
+					toast.error('Este livro possui reserva ativa. Apenas usuários com reserva podem retirá-lo.')
+					return
+				}
+			} catch (error) {
+				console.error('Erro ao validar reserva:', error)
+			}
+		}
+
 		try {
 			await loanService.create(loanForm.userId, loanForm.bookId, loanForm.days)
 			toast.success('Empréstimo registrado com sucesso!')
@@ -325,8 +308,10 @@ function App() {
 				days: DEFAULT_LOAN_DAYS,
 			})
 
+			setLoanModalOpen(false)
 			loadLoans()
-			loadBooks() // Atualiza disponibilidade
+			loadBooks()
+			loadReservations()
 		} catch (error) {
 			toast.error(error.response?.data?.message || 'Erro ao registrar empréstimo')
 			console.error(error)
@@ -338,7 +323,7 @@ function App() {
 			await loanService.returnBook(id)
 			toast.success('Devolução registrada com sucesso!')
 			loadLoans()
-			loadBooks() // Atualiza disponibilidade
+			loadBooks()
 		} catch (error) {
 			toast.error('Erro ao registrar devolução')
 			console.error(error)
@@ -352,13 +337,14 @@ function App() {
 			await loanService.delete(id)
 			toast.success('Empréstimo excluído com sucesso!')
 			loadLoans()
-			loadBooks() // Atualiza disponibilidade
+			loadBooks()
 		} catch (error) {
 			toast.error('Erro ao excluir empréstimo')
 			console.error(error)
 		}
 	}
 
+	// Reservations handlers
 	const loadReservations = async () => {
 		try {
 			setLoadingReservas(true)
@@ -390,9 +376,23 @@ function App() {
 				days: DEFAULT_RESERVATION_DAYS,
 			})
 
+			setReservationModalOpen(false)
 			loadReservations()
 		} catch (error) {
 			toast.error(error.response?.data?.message || 'Erro ao criar reserva')
+			console.error(error)
+		}
+	}
+
+	const handleConvertReservationToLoan = async (id, days = DEFAULT_LOAN_DAYS) => {
+		try {
+			await reservationService.convertToLoan(id, days)
+			toast.success('Empréstimo criado e reserva finalizada com sucesso!')
+			loadReservations()
+			loadLoans()
+			loadBooks()
+		} catch (error) {
+			toast.error(error.response?.data?.message || 'Erro ao criar empréstimo')
 			console.error(error)
 		}
 	}
@@ -421,144 +421,20 @@ function App() {
 		}
 	}
 
+	// Show loading or login screen
 	if (loading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+			<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
 				<div className="text-center">
-					<BookOpen className="h-12 w-12 text-indigo-600 animate-pulse mx-auto mb-4" />
-					<p className="text-gray-600">Carregando...</p>
+					<div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+					<p className="mt-4 text-gray-600">Carregando...</p>
 				</div>
 			</div>
 		)
 	}
 
 	if (!isAuthenticated) {
-		return (
-			<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-				<Card className="w-full max-w-md">
-					<CardHeader className="space-y-1">
-						<div className="flex items-center justify-center mb-4">
-							<BookOpen className="h-12 w-12 text-indigo-600" />
-						</div>
-						<CardTitle className="text-2xl text-center">LibShow</CardTitle>
-						<CardDescription className="text-center">
-							Sistema de Gerenciamento de Biblioteca
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{!showRegister ? (
-							<>
-								<form onSubmit={handleLogin} className="space-y-4">
-									<div className="space-y-2">
-										<Label htmlFor="username">Email</Label>
-										<Input
-											id="username"
-											type="email"
-											placeholder="seu@email.com"
-											value={loginData.username}
-											onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-											required
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="password">Senha</Label>
-										<Input
-											id="password"
-											type="password"
-											placeholder="••••••••"
-											value={loginData.password}
-											onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-											required
-										/>
-									</div>
-									<Button type="submit" className="w-full">
-										<LogIn className="mr-2 h-4 w-4" />
-										Entrar
-									</Button>
-								</form>
-								<div className="mt-4 text-center">
-									<p className="text-sm text-gray-600">
-										Não tem uma conta ainda?{' '}
-										<button
-											type="button"
-											onClick={() => setShowRegister(true)}
-											className="text-indigo-600 hover:text-indigo-800 font-semibold"
-										>
-											Cadastre-se
-										</button>
-									</p>
-								</div>
-							</>
-						) : (
-							<>
-								<form onSubmit={handleRegister} className="space-y-4">
-									<div className="space-y-2">
-										<Label htmlFor="register-name">Nome Completo</Label>
-										<Input
-											id="register-name"
-											type="text"
-											placeholder="Seu nome completo"
-											value={registerData.name}
-											onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-											required
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="register-email">Email</Label>
-										<Input
-											id="register-email"
-											type="email"
-											placeholder="seu@email.com"
-											value={registerData.email}
-											onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-											required
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="register-password">Senha</Label>
-										<Input
-											id="register-password"
-											type="password"
-											placeholder="Mínimo 6 caracteres"
-											value={registerData.password}
-											onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-											required
-											minLength={6}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="register-confirm">Confirmar Senha</Label>
-										<Input
-											id="register-confirm"
-											type="password"
-											placeholder="Digite a senha novamente"
-											value={registerData.confirmPassword}
-											onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-											required
-										/>
-									</div>
-									<Button type="submit" className="w-full">
-										Cadastrar
-									</Button>
-								</form>
-								<div className="mt-4 text-center">
-									<p className="text-sm text-gray-600">
-										Já tem uma conta?{' '}
-										<button
-											type="button"
-											onClick={() => setShowRegister(false)}
-											className="text-indigo-600 hover:text-indigo-800 font-semibold"
-										>
-											Fazer login
-										</button>
-									</p>
-								</div>
-							</>
-						)}
-					</CardContent>
-				</Card>
-			</div>
-		)
+		return <LoginForm />
 	}
 
 	return (
@@ -596,476 +472,162 @@ function App() {
 						</TabsTrigger>
 					</TabsList>
 
+					{/* Books Tab */}
 					<TabsContent value="livros" className="space-y-4">
+						<BookModal
+							open={bookModalOpen}
+							onOpenChange={setBookModalOpen}
+							bookForm={bookForm}
+							setBookForm={setBookForm}
+							editingBook={editingBook}
+							onSubmit={handleBookSubmit}
+							onCancel={handleCancelEdit}
+						/>
+
 						<Card>
-							<CardHeader>
-								<CardTitle>Gerenciamento de Livros</CardTitle>
-								<CardDescription>
-									{editingBook ? 'Edite as informações do livro' : 'Cadastre e gerencie o acervo da biblioteca'}
-								</CardDescription>
+							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+								<div>
+									<CardTitle>Gerenciamento de Livros</CardTitle>
+									<CardDescription className="mt-1.5">
+										Cadastre e gerencie o acervo da biblioteca
+									</CardDescription>
+								</div>
+								<Button
+									onClick={() => {
+										setEditingBook(null)
+										setBookModalOpen(true)
+									}}
+								>
+									<Plus className="h-4 w-4 mr-2" />
+									Adicionar Livro
+								</Button>
 							</CardHeader>
 							<CardContent>
-								<form onSubmit={handleBookSubmit} className="space-y-4">
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<div className="space-y-2">
-											<Label htmlFor="titulo">Título</Label>
-											<Input
-												id="titulo"
-												placeholder="Nome do livro"
-												value={bookForm.title}
-												onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="autor">Autor</Label>
-											<Input
-												id="autor"
-												placeholder="Nome do autor"
-												value={bookForm.author}
-												onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="isbn">ISBN</Label>
-											<Input
-												id="isbn"
-												placeholder="ISBN do livro"
-												value={bookForm.isbn}
-												onChange={(e) => setBookForm({ ...bookForm, isbn: e.target.value })}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="ano">Ano de Publicação</Label>
-											<Input
-												id="ano"
-												type="number"
-												placeholder="2024"
-												value={bookForm.publicationYear}
-												onChange={(e) => setBookForm({ ...bookForm, publicationYear: e.target.value })}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="editora">Editora</Label>
-											<Input
-												id="editora"
-												placeholder="Nome da editora"
-												value={bookForm.publisher}
-												onChange={(e) => setBookForm({ ...bookForm, publisher: e.target.value })}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="quantidade">Quantidade</Label>
-											<Input
-												id="quantidade"
-												type="number"
-												placeholder="1"
-												min="1"
-												value={bookForm.totalQuantity}
-												onChange={(e) => setBookForm({ ...bookForm, totalQuantity: parseInt(e.target.value) || 1 })}
-												required
-											/>
-										</div>
-									</div>
-									<div className="flex gap-2">
-										<Button type="submit" className="w-full md:w-auto">
-											{editingBook ? 'Atualizar Livro' : 'Cadastrar Livro'}
-										</Button>
-										{editingBook && (
-											<Button type="button" variant="outline" onClick={handleCancelEdit} className="w-full md:w-auto">
-												Cancelar Edição
-											</Button>
-										)}
-									</div>
-								</form>
-
-								<div className="mt-6">
-									<h3 className="text-lg font-semibold mb-4">Livros Cadastrados</h3>
-									{loadingLivros ? (
-										<div className="flex justify-center py-8">
-											<Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-										</div>
-									) : livros.length === 0 ? (
-										<p className="text-gray-500 text-center py-8">Nenhum livro cadastrado ainda.</p>
-									) : (
-										<div className="space-y-2">
-											{livros.map((livro) => (
-												<div key={livro.id} className="p-4 border rounded-lg flex justify-between items-center hover:bg-gray-50 transition-colors">
-													<div>
-														<h4 className="font-semibold">{livro.title}</h4>
-														<p className="text-sm text-gray-600">{livro.author} - {livro.publisher} ({livro.publicationYear})</p>
-														<p className="text-sm text-gray-500">ISBN: {livro.isbn}</p>
-														<p className="text-sm text-gray-500">
-															Disponíveis: {livro.availableQuantity} de {livro.totalQuantity}
-														</p>
-													</div>
-													<div className="flex gap-2">
-														<Button variant="outline" size="sm" onClick={() => handleEditBook(livro)}>
-															Editar
-														</Button>
-														<Button variant="destructive" size="sm" onClick={() => handleDeleteBook(livro.id)}>
-															Excluir
-														</Button>
-													</div>
-												</div>
-											))}
-										</div>
-									)}
-								</div>
+								<h3 className="text-lg font-semibold mb-4">Livros Cadastrados</h3>
+								<BookList
+									books={livros}
+									loading={loadingLivros}
+									onEdit={handleEditBook}
+									onDelete={handleDeleteBook}
+								/>
 							</CardContent>
 						</Card>
 					</TabsContent>
 
+					{/* Users Tab */}
 					<TabsContent value="usuarios" className="space-y-4">
+						<UserModal
+							open={userModalOpen}
+							onOpenChange={setUserModalOpen}
+							userForm={userForm}
+							setUserForm={setUserForm}
+							editingUser={editingUser}
+							onSubmit={handleUserSubmit}
+							onCancel={handleCancelEditUser}
+						/>
+
 						<Card>
-							<CardHeader>
-								<CardTitle>Gerenciamento de Usuários</CardTitle>
-								<CardDescription>
-									{editingUser ? 'Edite as informações do usuário' : 'Cadastre e gerencie usuários da biblioteca'}
-								</CardDescription>
+							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+								<div>
+									<CardTitle>Gerenciamento de Usuários</CardTitle>
+									<CardDescription className="mt-1.5">
+										Cadastre e gerencie usuários da biblioteca
+									</CardDescription>
+								</div>
+								<Button
+									onClick={() => {
+										setEditingUser(null)
+										setUserModalOpen(true)
+									}}
+								>
+									<Plus className="h-4 w-4 mr-2" />
+									Adicionar Usuário
+								</Button>
 							</CardHeader>
 							<CardContent>
-								<form onSubmit={handleUserSubmit} className="space-y-4">
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<div className="space-y-2">
-											<Label htmlFor="nome">Nome</Label>
-											<Input
-												id="nome"
-												placeholder="Nome completo"
-												value={userForm.name}
-												onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="email">Email</Label>
-											<Input
-												id="email"
-												type="email"
-												placeholder="email@exemplo.com"
-												value={userForm.email}
-												onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="senha">Senha {editingUser && '(deixe vazio para não alterar)'}</Label>
-											<Input
-												id="senha"
-												type="password"
-												placeholder="••••••••"
-												value={userForm.password}
-												onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-												required={!editingUser}
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="perfil">Perfil de Acesso</Label>
-											<select
-												id="perfil"
-												className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-												value={userForm.role}
-												onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-												required
-											>
-												{Object.entries(USER_ROLES).map(([key, value]) => (
-													<option key={value} value={value}>
-														{USER_ROLE_LABELS[value]}
-													</option>
-												))}
-											</select>
-										</div>
-									</div>
-									<div className="flex gap-2">
-										<Button type="submit" className="w-full md:w-auto">
-											{editingUser ? 'Atualizar Usuário' : 'Cadastrar Usuário'}
-										</Button>
-										{editingUser && (
-											<Button type="button" variant="outline" onClick={handleCancelEditUser} className="w-full md:w-auto">
-												Cancelar Edição
-											</Button>
-										)}
-									</div>
-								</form>
-
-								<div className="mt-6">
-									<h3 className="text-lg font-semibold mb-4">Usuários Cadastrados</h3>
-									{loadingUsuarios ? (
-										<div className="flex justify-center py-8">
-											<Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-										</div>
-									) : usuarios.length === 0 ? (
-										<p className="text-gray-500 text-center py-8">Nenhum usuário cadastrado ainda.</p>
-									) : (
-										<div className="space-y-2">
-											{usuarios.map((usuario) => (
-												<div key={usuario.id} className="p-4 border rounded-lg flex justify-between items-center hover:bg-gray-50 transition-colors">
-													<div>
-														<h4 className="font-semibold">{usuario.name}</h4>
-														<p className="text-sm text-gray-600">{usuario.email}</p>
-														<p className="text-sm text-gray-500">Perfil: {USER_ROLE_LABELS[usuario.role]}</p>
-													</div>
-													<div className="flex gap-2">
-														<Button variant="outline" size="sm" onClick={() => handleEditUser(usuario)}>
-															Editar
-														</Button>
-														<Button variant="destructive" size="sm" onClick={() => handleDeleteUser(usuario.id)}>
-															Excluir
-														</Button>
-													</div>
-												</div>
-											))}
-										</div>
-									)}
-								</div>
+								<h3 className="text-lg font-semibold mb-4">Usuários Cadastrados</h3>
+								<UserList
+									users={usuarios}
+									loading={loadingUsuarios}
+									onEdit={handleEditUser}
+									onDelete={handleDeleteUser}
+								/>
 							</CardContent>
 						</Card>
 					</TabsContent>
 
+					{/* Loans Tab */}
 					<TabsContent value="emprestimos" className="space-y-4">
+						<LoanModal
+							open={loanModalOpen}
+							onOpenChange={setLoanModalOpen}
+							loanForm={loanForm}
+							setLoanForm={setLoanForm}
+							users={usuarios}
+							books={livros}
+							reservations={reservas}
+							onSubmit={handleLoanSubmit}
+						/>
+
 						<Card>
-							<CardHeader>
-								<CardTitle>Gerenciamento de Empréstimos</CardTitle>
-								<CardDescription>
-									Registre empréstimos e devoluções de livros
-								</CardDescription>
+							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+								<div>
+									<CardTitle>Gerenciamento de Empréstimos</CardTitle>
+									<CardDescription className="mt-1.5">
+										Registre empréstimos e devoluções de livros
+									</CardDescription>
+								</div>
+								<Button onClick={() => setLoanModalOpen(true)}>
+									<Plus className="h-4 w-4 mr-2" />
+									Registrar Empréstimo
+								</Button>
 							</CardHeader>
 							<CardContent>
-								<form onSubmit={handleLoanSubmit} className="space-y-4">
-									<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-										<div className="space-y-2">
-											<Label htmlFor="usuario-emp">Usuário</Label>
-											<select
-												id="usuario-emp"
-												className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-												value={loanForm.userId}
-												onChange={(e) => setLoanForm({ ...loanForm, userId: e.target.value })}
-												required
-											>
-												<option value="">Selecione um usuário</option>
-												{usuarios.map((user) => (
-													<option key={user.id} value={user.id}>
-														{user.name} ({user.email})
-													</option>
-												))}
-											</select>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="livro-emp">Livro</Label>
-											<select
-												id="livro-emp"
-												className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-												value={loanForm.bookId}
-												onChange={(e) => setLoanForm({ ...loanForm, bookId: e.target.value })}
-												required
-											>
-												<option value="">Selecione um livro</option>
-												{livros.filter(book => book.availableQuantity > 0).map((book) => (
-													<option key={book.id} value={book.id}>
-														{book.title} - {book.author} (Disponíveis: {book.availableQuantity})
-													</option>
-												))}
-											</select>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="dias">Dias de Empréstimo</Label>
-											<Input
-												id="dias"
-												type="number"
-												placeholder="14"
-												min="1"
-												value={loanForm.days}
-												onChange={(e) => setLoanForm({ ...loanForm, days: parseInt(e.target.value) || DEFAULT_LOAN_DAYS })}
-												required
-											/>
-										</div>
-									</div>
-									<Button type="submit" className="w-full md:w-auto">
-										Registrar Empréstimo
-									</Button>
-								</form>
-
-								<div className="mt-6">
-									<h3 className="text-lg font-semibold mb-4">Empréstimos Ativos</h3>
-									{loadingEmprestimos ? (
-										<div className="flex justify-center py-8">
-											<Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-										</div>
-									) : emprestimos.length === 0 ? (
-										<p className="text-gray-500 text-center py-8">Nenhum empréstimo ativo.</p>
-									) : (
-										<div className="space-y-2">
-											{emprestimos.map((emprestimo) => {
-												const overdue = isLoanOverdue(emprestimo.expectedReturnDate, emprestimo.actualReturnDate)
-												const isReturned = !!emprestimo.actualReturnDate
-
-												return (
-													<div
-														key={emprestimo.id}
-														className={`p-4 border rounded-lg flex justify-between items-center transition-colors ${isReturned ? 'bg-gray-50' : overdue ? 'bg-red-50 border-red-300' : 'hover:bg-gray-50'
-															}`}
-													>
-														<div>
-															<h4 className="font-semibold">{emprestimo.book?.title || 'Livro não encontrado'}</h4>
-															<p className="text-sm text-gray-600">
-																Emprestado para: {emprestimo.user?.name || 'Usuário não encontrado'}
-															</p>
-															<p className="text-sm text-gray-500">
-																Data do empréstimo: {formatDate(emprestimo.loanDate)}
-															</p>
-															<p className={`text-sm ${overdue && !isReturned ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
-																Devolução prevista: {formatDate(emprestimo.expectedReturnDate)}
-																{overdue && !isReturned && ' (ATRASADO)'}
-															</p>
-															{isReturned && (
-																<p className="text-sm text-green-600 font-semibold">
-																	Devolvido em: {formatDate(emprestimo.actualReturnDate)}
-																</p>
-															)}
-														</div>
-														<div className="flex gap-2">
-															{!isReturned && (
-																<Button variant="outline" size="sm" onClick={() => handleReturnBook(emprestimo.id)}>
-																	Registrar Devolução
-																</Button>
-															)}
-															<Button variant="destructive" size="sm" onClick={() => handleDeleteLoan(emprestimo.id)}>
-																Excluir
-															</Button>
-														</div>
-													</div>
-												)
-											})}
-										</div>
-									)}
-								</div>
+								<h3 className="text-lg font-semibold mb-4">Empréstimos Ativos</h3>
+								<LoanList
+									loans={emprestimos}
+									loading={loadingEmprestimos}
+									onReturn={handleReturnBook}
+									onDelete={handleDeleteLoan}
+								/>
 							</CardContent>
 						</Card>
 					</TabsContent>
 
+					{/* Reservations Tab */}
 					<TabsContent value="reservas" className="space-y-4">
+						<ReservationModal
+							open={reservationModalOpen}
+							onOpenChange={setReservationModalOpen}
+							reservationForm={reservationForm}
+							setReservationForm={setReservationForm}
+							users={usuarios}
+							books={livros}
+							onSubmit={handleReservationSubmit}
+						/>
+
 						<Card>
-							<CardHeader>
-								<CardTitle>Gerenciamento de Reservas</CardTitle>
-								<CardDescription>
-									Gerencie reservas de livros indisponíveis
-								</CardDescription>
+							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+								<div>
+									<CardTitle>Gerenciamento de Reservas</CardTitle>
+									<CardDescription className="mt-1.5">
+										Gerencie reservas de livros indisponíveis
+									</CardDescription>
+								</div>
+								<Button onClick={() => setReservationModalOpen(true)}>
+									<Plus className="h-4 w-4 mr-2" />
+									Fazer Reserva
+								</Button>
 							</CardHeader>
 							<CardContent>
-								<form onSubmit={handleReservationSubmit} className="space-y-4">
-									<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-										<div className="space-y-2">
-											<Label htmlFor="usuario-res">Usuário</Label>
-											<select
-												id="usuario-res"
-												className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-												value={reservationForm.userId}
-												onChange={(e) => setReservationForm({ ...reservationForm, userId: e.target.value })}
-												required
-											>
-												<option value="">Selecione um usuário</option>
-												{usuarios.map((user) => (
-													<option key={user.id} value={user.id}>
-														{user.name} ({user.email})
-													</option>
-												))}
-											</select>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="livro-res">Livro</Label>
-											<select
-												id="livro-res"
-												className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-												value={reservationForm.bookId}
-												onChange={(e) => setReservationForm({ ...reservationForm, bookId: e.target.value })}
-												required
-											>
-												<option value="">Selecione um livro</option>
-												{livros.filter(book => book.availableQuantity === 0).map((book) => (
-													<option key={book.id} value={book.id}>
-														{book.title} - {book.author} (Indisponível)
-													</option>
-												))}
-											</select>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="dias-res">Dias de Reserva</Label>
-											<Input
-												id="dias-res"
-												type="number"
-												placeholder="7"
-												min="1"
-												value={reservationForm.days}
-												onChange={(e) => setReservationForm({ ...reservationForm, days: parseInt(e.target.value) || DEFAULT_RESERVATION_DAYS })}
-												required
-											/>
-										</div>
-									</div>
-									<Button type="submit" className="w-full md:w-auto">
-										Fazer Reserva
-									</Button>
-								</form>
-
-								<div className="mt-6">
-									<h3 className="text-lg font-semibold mb-4">Reservas Cadastradas</h3>
-									{loadingReservas ? (
-										<div className="flex justify-center py-8">
-											<Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-										</div>
-									) : reservas.length === 0 ? (
-										<p className="text-gray-500 text-center py-8">Nenhuma reserva cadastrada.</p>
-									) : (
-										<div className="space-y-2">
-											{reservas.map((reserva) => {
-												const expired = isReservationExpired(reserva.expirationDate, reserva.status)
-												const isCancelled = reserva.status === 'CANCELLED'
-												const isCompleted = reserva.status === 'COMPLETED'
-
-												return (
-													<div
-														key={reserva.id}
-														className={`p-4 border rounded-lg flex justify-between items-center transition-colors ${isCancelled || isCompleted ? 'bg-gray-50' : expired ? 'bg-yellow-50 border-yellow-300' : 'hover:bg-gray-50'
-															}`}
-													>
-														<div>
-															<h4 className="font-semibold">{reserva.book?.title || 'Livro não encontrado'}</h4>
-															<p className="text-sm text-gray-600">
-																Reservado por: {reserva.user?.name || 'Usuário não encontrado'}
-															</p>
-															<p className="text-sm text-gray-500">
-																Data da reserva: {formatDate(reserva.reservationDate)}
-															</p>
-															<p className={`text-sm ${expired && !isCancelled && !isCompleted ? 'text-yellow-600 font-semibold' : 'text-gray-500'}`}>
-																Validade: {formatDate(reserva.expirationDate)}
-																{expired && !isCancelled && !isCompleted && ' (EXPIRADA)'}
-															</p>
-															<p className={`text-sm font-semibold ${isCancelled ? 'text-red-600' :
-																isCompleted ? 'text-green-600' :
-																	'text-blue-600'
-																}`}>
-																Status: {RESERVATION_STATUS_LABELS[reserva.status]}
-															</p>
-														</div>
-														<div className="flex gap-2">
-															{reserva.status === 'ACTIVE' && (
-																<Button variant="outline" size="sm" onClick={() => handleCancelReservation(reserva.id)}>
-																	Cancelar
-																</Button>
-															)}
-															<Button variant="destructive" size="sm" onClick={() => handleDeleteReservation(reserva.id)}>
-																Excluir
-															</Button>
-														</div>
-													</div>
-												)
-											})}
-										</div>
-									)}
-								</div>
+								<h3 className="text-lg font-semibold mb-4">Reservas Cadastradas</h3>
+								<ReservationList
+									reservations={reservas}
+									loading={loadingReservas}
+									onConvertToLoan={handleConvertReservationToLoan}
+									onCancel={handleCancelReservation}
+									onDelete={handleDeleteReservation}
+								/>
 							</CardContent>
 						</Card>
 					</TabsContent>

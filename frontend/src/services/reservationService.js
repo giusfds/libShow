@@ -31,6 +31,14 @@ const reservationService = {
 	async delete(id) {
 		await api.delete(`/v1/reservations/${id}`);
 	},
+
+	// POST /api/v1/reservations/{id}/convert-to-loan?days={days}
+	async convertToLoan(id, days) {
+		const response = await api.post(`/v1/reservations/${id}/convert-to-loan`, null, {
+			params: { days },
+		});
+		return response.data;
+	},
 };
 
 export default reservationService;

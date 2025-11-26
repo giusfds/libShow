@@ -1,6 +1,9 @@
 package com.example.libshow.controller;
 
 import com.example.libshow.domain.Book;
+import com.example.libshow.domain.enums.ReservationStatus;
+import com.example.libshow.dto.BookAvailabilityDTO;
+import com.example.libshow.repository.ReservationRepository;
 import com.example.libshow.service.BookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/books")
@@ -20,10 +24,30 @@ public class BookController {
 	@Autowired
 	private BookService bookService;
 
+	@Autowired
+	private ReservationRepository reservationRepository;
+
 	@GetMapping
 	public List<Book> getAllBooks() {
 		logger.info("[BookController] Fetching all books");
 		return bookService.findAll();
+	}
+
+	@GetMapping("/availability")
+	public List<BookAvailabilityDTO> getBooksWithAvailability() {
+		logger.info("[BookController] Fetching books with availability info");
+		List<Book> books = bookService.findAll();
+
+		return books.stream()
+				.map(book -> {
+					long activeReservationsCount = reservationRepository
+							.findByBookIdAndStatus(book.getId(), ReservationStatus.ACTIVE)
+							.size();
+					boolean hasActiveReservations = activeReservationsCount > 0;
+
+					return new BookAvailabilityDTO(book, hasActiveReservations, activeReservationsCount);
+				})
+				.collect(Collectors.toList());
 	}
 
 	@GetMapping("/{id}")

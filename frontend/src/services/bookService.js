@@ -7,6 +7,12 @@ const bookService = {
 		return response.data;
 	},
 
+	// GET /api/v1/books/availability
+	async getAllWithAvailability() {
+		const response = await api.get('/v1/books/availability');
+		return response.data;
+	},
+
 	// GET /api/v1/books/{id}
 	async getById(id) {
 		const response = await api.get(`/v1/books/${id}`);

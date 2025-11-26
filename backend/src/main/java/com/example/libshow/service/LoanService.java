@@ -2,10 +2,13 @@ package com.example.libshow.service;
 
 import com.example.libshow.domain.Book;
 import com.example.libshow.domain.Loan;
+import com.example.libshow.domain.Reservation;
 import com.example.libshow.domain.User;
+import com.example.libshow.domain.enums.ReservationStatus;
 import com.example.libshow.exception.BusinessException;
 import com.example.libshow.exception.ResourceNotFoundException;
 import com.example.libshow.repository.LoanRepository;
+import com.example.libshow.repository.ReservationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,9 @@ public class LoanService {
 	@Autowired
 	private BookService bookService;
 
+	@Autowired
+	private ReservationRepository reservationRepository;
+
 	public List<Loan> findAll() {
 		logger.info("[LoanService] Finding all loans");
 		return loanRepository.findAll();
@@ -49,6 +55,31 @@ public class LoanService {
 
 		if (book.getAvailableQuantity() < 1) {
 			throw new BusinessException("Book is not available for loan");
+		}
+
+		// Verifica se há reservas ativas para este livro
+		List<Reservation> activeReservations = reservationRepository.findByBookIdAndStatus(bookId,
+				ReservationStatus.ACTIVE);
+
+		if (!activeReservations.isEmpty()) {
+			// Verifica se o usuário que está tentando pegar emprestado tem uma reserva
+			// ativa
+			boolean userHasReservation = activeReservations.stream()
+					.anyMatch(reservation -> reservation.getUser().getId().equals(userId));
+
+			if (!userHasReservation) {
+				throw new BusinessException("This book has active reservations. Only users with reservations can borrow it.");
+			}
+
+			// Se o usuário tem uma reserva, concluir a reserva
+			activeReservations.stream()
+					.filter(reservation -> reservation.getUser().getId().equals(userId))
+					.findFirst()
+					.ifPresent(reservation -> {
+						reservation.setStatus(ReservationStatus.COMPLETED);
+						reservationRepository.save(reservation);
+						logger.info("[LoanService] Reservation {} completed for user {}", reservation.getId(), userId);
+					});
 		}
 
 		Loan loan = new Loan();

@@ -52,4 +52,11 @@ public class ReservationController {
 		reservationService.delete(id);
 		return ResponseEntity.noContent().build();
 	}
+
+	@PostMapping("/{id}/convert-to-loan")
+	public ResponseEntity<Reservation> convertToLoan(@PathVariable Long id, @RequestParam int days) {
+		logger.info("[ReservationController] Converting reservation {} to loan with {} days", id, days);
+		Reservation reservation = reservationService.convertToLoan(id, days);
+		return ResponseEntity.ok(reservation);
+	}
 }

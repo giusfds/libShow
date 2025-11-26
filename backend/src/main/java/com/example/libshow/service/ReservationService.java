@@ -30,6 +30,9 @@ public class ReservationService {
 	@Autowired
 	private BookService bookService;
 
+	@Autowired
+	private LoanService loanService;
+
 	public List<Reservation> findAll() {
 		logger.info("[ReservationService] Finding all reservations");
 		return reservationRepository.findAll();
@@ -82,5 +85,28 @@ public class ReservationService {
 			throw new ResourceNotFoundException("Reservation not found with id: " + id);
 		}
 		reservationRepository.deleteById(id);
+	}
+
+	@Transactional
+	public Reservation convertToLoan(Long reservationId, int loanDays) {
+		logger.info("[ReservationService] Converting reservation {} to loan with {} days", reservationId, loanDays);
+
+		Reservation reservation = findById(reservationId);
+
+		if (reservation.getStatus() != ReservationStatus.ACTIVE) {
+			throw new BusinessException("Reservation is not active");
+		}
+
+		Book book = reservation.getBook();
+		if (book.getAvailableQuantity() <= 0) {
+			throw new BusinessException("Book is not available");
+		}
+
+		// Create the loan
+		loanService.createLoan(reservation.getUser().getId(), book.getId(), loanDays);
+
+		// Mark reservation as completed
+		reservation.setStatus(ReservationStatus.COMPLETED);
+		return reservationRepository.save(reservation);
 	}
 }

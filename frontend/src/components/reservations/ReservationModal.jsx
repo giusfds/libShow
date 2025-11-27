@@ -12,6 +12,7 @@ export default function ReservationModal({
 	users,
 	books,
 	onSubmit,
+	canSelectUser = true,
 }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -24,13 +25,14 @@ export default function ReservationModal({
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div className="space-y-2">
 							<Label htmlFor="usuario-res">Usuário</Label>
-							<select
-								id="usuario-res"
-								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-								value={reservationForm.userId}
-								onChange={(e) => setReservationForm({ ...reservationForm, userId: e.target.value })}
-								required
-							>
+						<select
+							id="usuario-res"
+							className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+							value={reservationForm.userId}
+							onChange={(e) => setReservationForm({ ...reservationForm, userId: e.target.value })}
+							required
+							disabled={!canSelectUser}
+						>
 								<option value="">Selecione um usuário</option>
 								{users.map((user) => (
 									<option key={user.id} value={user.id}>

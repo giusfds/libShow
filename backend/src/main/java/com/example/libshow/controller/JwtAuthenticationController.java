@@ -44,11 +44,15 @@ public class JwtAuthenticationController {
 			final UserDetails userDetails = userDetailsService
 					.loadUserByUsername(authenticationRequest.getUsername());
 
+			// Busca o usuário para pegar a role
+			com.example.libshow.domain.User user = ((JwtUserDetailsService) userDetailsService)
+					.getUserByEmail(authenticationRequest.getUsername());
+
 			final String token = jwtTokenUtil.generateToken(userDetails);
 			logger.info("[JwtAuthenticationController] JWT Token generated successfully for: {}",
 					authenticationRequest.getUsername());
 
-			return ResponseEntity.ok(new JwtResponse(token));
+			return ResponseEntity.ok(new JwtResponse(token, user.getRole().toString(), user.getEmail()));
 		} catch (Exception e) {
 			logger.error("[JwtAuthenticationController] Authentication failed for user: {}",
 					authenticationRequest.getUsername(), e);

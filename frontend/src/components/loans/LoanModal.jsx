@@ -13,6 +13,7 @@ export default function LoanModal({
 	books,
 	reservations,
 	onSubmit,
+	canSelectUser = true,
 }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -23,23 +24,24 @@ export default function LoanModal({
 				</DialogHeader>
 				<form onSubmit={onSubmit} className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<div className="space-y-2">
-							<Label htmlFor="usuario-emp">Usuário</Label>
-							<select
-								id="usuario-emp"
-								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-								value={loanForm.userId}
-								onChange={(e) => setLoanForm({ ...loanForm, userId: e.target.value })}
-								required
-							>
-								<option value="">Selecione um usuário</option>
-								{users.map((user) => (
-									<option key={user.id} value={user.id}>
-										{user.name} ({user.email})
-									</option>
-								))}
-							</select>
-						</div>
+					<div className="space-y-2">
+						<Label htmlFor="usuario-emp">Usuário</Label>
+						<select
+							id="usuario-emp"
+							className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+							value={loanForm.userId}
+							onChange={(e) => setLoanForm({ ...loanForm, userId: e.target.value })}
+							required
+							disabled={!canSelectUser}
+						>
+							<option value="">Selecione um usuário</option>
+							{users.map((user) => (
+								<option key={user.id} value={user.id}>
+									{user.name} ({user.email})
+								</option>
+							))}
+						</select>
+					</div>
 						<div className="space-y-2">
 							<Label htmlFor="livro-emp">Livro</Label>
 							<select

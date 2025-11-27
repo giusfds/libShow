@@ -31,4 +31,13 @@ public class JwtUserDetailsService implements UserDetailsService {
 		logger.info("[JwtUserDetailsService] User found: {}, Role: {}", email, user.getRole());
 		return new User(user.getEmail(), user.getPassword(), new ArrayList<>());
 	}
+
+	public com.example.libshow.domain.User getUserByEmail(String email) throws UsernameNotFoundException {
+		logger.info("[JwtUserDetailsService] Getting user entity for: {}", email);
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> {
+					logger.error("[JwtUserDetailsService] User not found: {}", email);
+					return new UsernameNotFoundException("User not found with email: " + email);
+				});
+	}
 }

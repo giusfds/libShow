@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { Loader2, Trash2, Undo } from 'lucide-react'
 import { formatDate, isLoanOverdue } from '@/utils/formatters.js'
 
-export default function LoanList({ loans, loading, onReturn, onDelete }) {
+export default function LoanList({ loans, loading, onReturn, onDelete, canManage = true, canReturnLoan = true, canDeleteFinishedLoan = true, currentUserEmail = null }) {
 	if (loading) {
 		return (
 			<div className="flex justify-center py-8">
@@ -20,6 +20,9 @@ export default function LoanList({ loans, loading, onReturn, onDelete }) {
 			{loans.map((emprestimo) => {
 				const overdue = isLoanOverdue(emprestimo.expectedReturnDate, emprestimo.actualReturnDate)
 				const isReturned = !!emprestimo.actualReturnDate
+				const isOwnLoan = currentUserEmail && emprestimo.user?.email === currentUserEmail
+				const canShowReturnButton = !isReturned && (canManage || (canReturnLoan && isOwnLoan))
+				const canShowDeleteButton = canManage || (canDeleteFinishedLoan && isReturned && isOwnLoan)
 
 				return (
 					<div
@@ -48,18 +51,22 @@ export default function LoanList({ loans, loading, onReturn, onDelete }) {
 								</p>
 							)}
 						</div>
-						<div className="flex gap-2">
-							{!isReturned && (
-								<Button variant="outline" size="sm" onClick={() => onReturn(emprestimo.id)}>
-									<Undo className="h-4 w-4 mr-1" />
-									Registrar Devolução
-								</Button>
-							)}
-							<Button variant="destructive" size="sm" onClick={() => onDelete(emprestimo.id)}>
-								<Trash2 className="h-4 w-4 mr-1" />
-								Excluir
-							</Button>
-						</div>
+						{(canShowReturnButton || canShowDeleteButton) && (
+							<div className="flex gap-2">
+								{canShowReturnButton && (
+									<Button variant="outline" size="sm" onClick={() => onReturn(emprestimo.id)}>
+										<Undo className="h-4 w-4 mr-1" />
+										Registrar Devolução
+									</Button>
+								)}
+								{canShowDeleteButton && (
+									<Button variant="destructive" size="sm" onClick={() => onDelete(emprestimo.id)}>
+										<Trash2 className="h-4 w-4 mr-1" />
+										Excluir
+									</Button>
+								)}
+							</div>
+						)}
 					</div>
 				)
 			})}

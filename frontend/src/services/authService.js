@@ -10,7 +10,8 @@ const authService = {
 
 		if (response.data.token) {
 			localStorage.setItem('token', response.data.token);
-			localStorage.setItem('user', username);
+			localStorage.setItem('user', response.data.username);
+			localStorage.setItem('role', response.data.role);
 		}
 
 		return response.data;
@@ -20,6 +21,7 @@ const authService = {
 	logout() {
 		localStorage.removeItem('token');
 		localStorage.removeItem('user');
+		localStorage.removeItem('role');
 	},
 
 	// Verifica se está autenticado
@@ -30,6 +32,11 @@ const authService = {
 	// Pega o usuário atual
 	getCurrentUser() {
 		return localStorage.getItem('user');
+	},
+
+	// Pega a role do usuário atual
+	getUserRole() {
+		return localStorage.getItem('role');
 	},
 };
 

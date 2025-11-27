@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button.jsx'
 import { Loader2, Pencil, Trash2 } from 'lucide-react'
 
-export default function BookList({ books, loading, onEdit, onDelete }) {
+export default function BookList({ books, loading, onEdit, onDelete, canManage = true }) {
 	if (loading) {
 		return (
 			<div className="flex justify-center py-8">
@@ -37,16 +37,18 @@ export default function BookList({ books, loading, onEdit, onDelete }) {
 							</p>
 						)}
 					</div>
-					<div className="flex gap-2">
-						<Button variant="outline" size="sm" onClick={() => onEdit(livro)}>
-							<Pencil className="h-4 w-4 mr-1" />
-							Editar
-						</Button>
-						<Button variant="destructive" size="sm" onClick={() => onDelete(livro.id)}>
-							<Trash2 className="h-4 w-4 mr-1" />
-							Excluir
-						</Button>
-					</div>
+					{canManage && (
+						<div className="flex gap-2">
+							<Button variant="outline" size="sm" onClick={() => onEdit(livro)}>
+								<Pencil className="h-4 w-4 mr-1" />
+								Editar
+							</Button>
+							<Button variant="destructive" size="sm" onClick={() => onDelete(livro.id)}>
+								<Trash2 className="h-4 w-4 mr-1" />
+								Excluir
+							</Button>
+						</div>
+					)}
 				</div>
 			))}
 		</div>
